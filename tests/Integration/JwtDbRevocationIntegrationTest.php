@@ -9,19 +9,20 @@ use BlackCat\Database\Packages\JwtTokens\Repository\JwtTokenRepository;
 use BlackCat\Database\Packages\Users\Repository\UserRepository;
 use BlackCat\Database\Packages\Users\UsersModule;
 use BlackCat\Jwt\Jwt;
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunClassInSeparateProcess;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Requires a real DB (MySQL/Postgres); skipped unless DB_DSN is provided.
- *
- * @runInSeparateProcess
- * @preserveGlobalState disabled
+ * Requires a real DB (MySQL/Postgres); fails if a DB is not reachable.
  */
+#[RunClassInSeparateProcess]
+#[PreserveGlobalState(false)]
 final class JwtDbRevocationIntegrationTest extends TestCase
 {
     public function testVerifyWithDbJtiCheck(): void
     {
-        $db = $this->initDbOrSkip();
+        $db = $this->initDbOrFail();
         $dialect = $db->dialect();
 
         (new UsersModule())->install($db, $dialect);
@@ -59,11 +60,11 @@ final class JwtDbRevocationIntegrationTest extends TestCase
         self::assertNull(Jwt::verify($token, keysDir: $keysDir, checkJtiInDb: true, db: $db));
     }
 
-    private function initDbOrSkip(): Database
+    private function initDbOrFail(): Database
     {
         $dsn = (string)(getenv('DB_DSN') ?: '');
         if ($dsn === '') {
-            self::markTestSkipped('Set DB_DSN to run integration tests.');
+            self::fail('Integration tests require a real DB. Set DB_DSN/DB_USER/DB_PASSWORD (use a disposable test database).');
         }
 
         Database::init([
@@ -130,4 +131,3 @@ final class JwtDbRevocationIntegrationTest extends TestCase
         }
     }
 }
-

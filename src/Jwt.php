@@ -163,6 +163,8 @@ final class Jwt
     /**
      * Issue refresh token (random string) and return array:
      * ['raw' => $refreshTokenRaw, 'hash' => binary32_hash_to_store, 'pepver' => string|null, 'jti' => string, 'expires_at' => string]
+     *
+     * @return array{raw: string, hash: string, pepver: string|null, jti: string, expires_at: string, user_id: int}
      */
     public static function generateRefreshToken(int $userId, ?int $ttl = null, ?string $keysDir = null): array
     {
@@ -255,4 +257,3 @@ final class Jwt
         return $payload;
     }
 }
-
